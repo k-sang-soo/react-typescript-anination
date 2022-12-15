@@ -41,6 +41,7 @@ export const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
+    background:linear-gradient(135deg,#e09,#d0e);
   }
 
   [hidden], hr {
