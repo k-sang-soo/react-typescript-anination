@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { GlobalStyle } from './StyledReset';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useViewportScroll } from 'framer-motion';
 
 const Container = styled.div``;
 
@@ -21,6 +21,10 @@ const BiggerBox = styled.div`
     justify-content: center;
     align-items: center;
     overflow: hidden;
+`;
+
+const ScrollBox = styled(Wrapper)`
+    height: 200vh;
 `;
 
 const Box = styled(motion.div)`
@@ -96,6 +100,8 @@ function App() {
     const x = useMotionValue(0);
     const rotateZ = useTransform(x, [-400, 400], [-360, 360]);
     const gradient = useTransform(x, [-800, 800], ['linear-gradient(135deg, rgb(0, 210, 238), rgb(0, 83, 238))', 'linear-gradient(135deg, rgb(0, 238, 155), rgb(238, 178, 0))']);
+    const { scrollY, scrollYProgress } = useViewportScroll();
+    const scale = useTransform(scrollYProgress, [0, 1], [1, 2]);
     useEffect(() => {
         console.log(dragWrap.current);
         console.log(dragWrap.current?.offsetLeft);
@@ -122,9 +128,9 @@ function App() {
                         <Box variants={ani3} drag dragConstraints={biggerBoxRef} whileHover="hover" whileTap="click" whileDrag="drag" />
                     </BiggerBox>
                 </Wrapper>
-                <Wrapper ref={dragWrap} style={{ background: gradient }}>
-                    <Box ref={dragBox} style={{ x, rotateZ }} drag="x" dragSnapToOrigin />
-                </Wrapper>
+                <ScrollBox ref={dragWrap} style={{ background: gradient }}>
+                    <Box ref={dragBox} style={{ x, rotateZ, scale }} drag="x" dragSnapToOrigin />
+                </ScrollBox>
             </Container>
         </>
     );
