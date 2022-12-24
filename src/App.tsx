@@ -1,7 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { GlobalStyle } from './StyledReset';
-import { motion, useMotionValue, useTransform, useViewportScroll } from 'framer-motion';
+import { AnimatePresence, motion, useMotionValue, useTransform, useViewportScroll } from 'framer-motion';
 
 const Container = styled.div``;
 
@@ -10,6 +10,12 @@ const Wrapper = styled(motion.div)`
     justify-content: center;
     align-items: center;
     padding: 40px 0;
+`;
+
+const SlideWrapper = styled(Wrapper)`
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
 `;
 
 const BiggerBox = styled.div`
@@ -41,6 +47,11 @@ const Box2 = styled(Box)`
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 40px;
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.06);
+`;
+
+const SlideBox = styled(Box)`
+    position: absolute;
+    top: 100px;
 `;
 
 const Circle = styled(motion.div)`
@@ -114,7 +125,57 @@ const ani5 = {
     },
 };
 
+const aniShowing = {
+    initial: {
+        opacity: 0,
+        scale: 0,
+    },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        rotateZ: 360,
+        transition: {
+            duration: 0.5,
+        },
+    },
+    leaving: {
+        opacity: 0,
+        scale: 0,
+        y: 50,
+        transition: {
+            duration: 0.5,
+        },
+    },
+};
+
+const aniSlideNext = {
+    invisible: (isBack: boolean) => ({
+        x: isBack ? -300 : 300,
+        opacity: 0,
+    }),
+    visible: {
+        x: 0,
+        opacity: 1,
+        transition: {
+            duration: 0.5,
+        },
+    },
+    exit: (isBack: boolean) => ({ x: isBack ? 300 : -300, opacity: 0, transition: { duration: 0.5 } }),
+};
+
 function App() {
+    const [showing, setShowing] = useState(false);
+    const [back, setBack] = useState(false);
+    const [showSlideIdx, setShowSlideIdx] = useState(1);
+    const toggleShowing = () => setShowing((prev) => !prev);
+    const clickNextBtn = () => {
+        setBack(false);
+        setShowSlideIdx((prev) => (prev === 10 ? 10 : prev + 1));
+    };
+    const clickPrevBtn = () => {
+        setBack(true);
+        setShowSlideIdx((prev) => (prev === 1 ? 1 : prev - 1));
+    };
     const biggerBoxRef = useRef<HTMLDivElement>(null);
     const dragWrap = useRef<HTMLDivElement>(null);
     const dragBox = useRef<HTMLDivElement>(null);
@@ -162,6 +223,25 @@ function App() {
                         ></motion.path>
                     </Svg>
                 </Wrapper>
+                {/* AnimatePresence 태그는 항상 보여야하고 안에 if문이 있어야 한다. */}
+                <Wrapper>
+                    <AnimatePresence>{showing ? <Box key="popup" variants={aniShowing} initial="initial" animate="visible" exit="leaving" /> : null}</AnimatePresence>
+                </Wrapper>
+                <button onClick={toggleShowing}>toggleShowing</button>
+                <SlideWrapper>
+                    {/* mode="wait" 초기 animation이 완전하게 실행 된 후에 다음 animation이 실행 됨 */}
+                    <AnimatePresence custom={back}>
+                        <SlideBox key={showSlideIdx} custom={back} variants={aniSlideNext} initial="invisible" animate="visible" exit="exit">
+                            {showSlideIdx}
+                        </SlideBox>
+                    </AnimatePresence>
+                </SlideWrapper>
+                <button type="button" onClick={clickNextBtn}>
+                    Next
+                </button>
+                <button type="button" onClick={clickPrevBtn}>
+                    Prev
+                </button>
             </Container>
         </>
     );
