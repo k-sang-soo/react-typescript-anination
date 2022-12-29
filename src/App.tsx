@@ -72,6 +72,37 @@ const Svg = styled.svg`
     }
 `;
 
+const Grid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 50vw;
+    gap: 10px;
+
+    ${Box} {
+        width: auto;
+    }
+
+    div:first-child,
+    div:last-child {
+        grid-column: span 2;
+    }
+`;
+
+const Overlay = styled(motion.div)`
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
+
+const overlay = {
+    hidden: { backgroundColor: 'rgba(0, 0, 0, 0)' },
+    visible: { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+    exit: { backgroundColor: 'rgba(0, 0, 0, 0)' },
+};
+
 const ani1 = {
     start: { scale: 0 },
     end: { scale: 1, rotateZ: 360, transition: { type: 'spring', delay: 0.5 } },
@@ -167,6 +198,8 @@ function App() {
     const [showing, setShowing] = useState(false);
     const [back, setBack] = useState(false);
     const [showSlideIdx, setShowSlideIdx] = useState(1);
+    const [clicked, setClicked] = useState(false);
+    const [id, setId] = useState<null | string>(null);
     const toggleShowing = () => setShowing((prev) => !prev);
     const clickNextBtn = () => {
         setBack(false);
@@ -176,6 +209,7 @@ function App() {
         setBack(true);
         setShowSlideIdx((prev) => (prev === 1 ? 1 : prev - 1));
     };
+    const toggleClick = () => setClicked((prev) => !prev);
     const biggerBoxRef = useRef<HTMLDivElement>(null);
     const dragWrap = useRef<HTMLDivElement>(null);
     const dragBox = useRef<HTMLDivElement>(null);
@@ -223,6 +257,7 @@ function App() {
                         ></motion.path>
                     </Svg>
                 </Wrapper>
+                {/* AnimatePresence 동적으로 컴포넌트가 보여지고 없어질 때 사용 */}
                 {/* AnimatePresence 태그는 항상 보여야하고 안에 if문이 있어야 한다. */}
                 <Wrapper>
                     <AnimatePresence>{showing ? <Box key="popup" variants={aniShowing} initial="initial" animate="visible" exit="leaving" /> : null}</AnimatePresence>
@@ -242,6 +277,26 @@ function App() {
                 <button type="button" onClick={clickPrevBtn}>
                     Prev
                 </button>
+                <Wrapper onClick={toggleClick}>
+                    {/* layoutId 로 두 컴포넌트가 이어져있게 만듦 */}
+                    <Box>{!clicked ? <Circle layoutId="circle" /> : null}</Box>
+                    <Box>{clicked ? <Circle layoutId="circle" /> : null}</Box>
+                </Wrapper>
+
+                <Wrapper>
+                    <Grid>
+                        {['1', '2', '3', '4'].map((n) => (
+                            <Box onClick={() => setId(n)} key={n} layoutId={n} />
+                        ))}
+                    </Grid>
+                    <AnimatePresence>
+                        {id ? (
+                            <Overlay variants={overlay} onClick={() => setId(null)} initial="hidden" animate="visible" exit="exit">
+                                <Box layoutId={id} style={{ width: 400, height: 200 }} />
+                            </Overlay>
+                        ) : null}
+                    </AnimatePresence>
+                </Wrapper>
             </Container>
         </>
     );
